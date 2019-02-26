@@ -1,12 +1,12 @@
-package main
+package pg
 
 import (
 	"fmt"
 	"time"
 )
 
-// PGConfig contains configurations to connect to a PG database
-type PGConfig struct {
+// Config contains configurations to connect to a PG database
+type Config struct {
 	Username      string
 	Password      string
 	Host          string
@@ -17,12 +17,12 @@ type PGConfig struct {
 }
 
 // ConnStr returns a connection string to connect to postgres
-func (c *PGConfig) ConnStr() string {
+func (c *Config) ConnStr() string {
 	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", c.Username, c.Password, c.Host, c.DBName)
 }
 
 // GetQuery returns the query to use to ping
-func (c *PGConfig) GetQuery() string {
+func (c *Config) GetQuery() string {
 	if c.Query == "" {
 		return "select 1"
 	}
@@ -31,7 +31,7 @@ func (c *PGConfig) GetQuery() string {
 }
 
 // GetFrequency returns the frequence in MS in which the query should be run
-func (c *PGConfig) GetFrequency() time.Duration {
+func (c *Config) GetFrequency() time.Duration {
 	if c.FrequencyInMS == 0 {
 		return time.Second
 	}
