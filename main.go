@@ -21,6 +21,7 @@ type PGConfig struct {
 	DBName        string
 	Query         string
 	FrequencyInMS int32
+	Debug         bool
 }
 
 // ConnStr returns a connection string to connect to postgres
@@ -53,7 +54,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(os.Stdout).Encode(conf)
+	if conf.Debug {
+		json.NewEncoder(os.Stdout).Encode(conf)
+	}
 
 	db, err := sql.Open("postgres", conf.ConnStr())
 	if err != nil {
