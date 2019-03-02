@@ -44,7 +44,9 @@ func (db *DB) Ping() chan SQLResult {
 	go func() {
 		ticker := time.NewTicker(db.conf.GetFrequency())
 		for range ticker.C {
-			result <- executeQuery(db.db, db.conf.GetQuery())
+			go func() {
+				result <- executeQuery(db.db, db.conf.GetQuery())
+			}()
 		}
 		close(result)
 	}()
