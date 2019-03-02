@@ -51,14 +51,6 @@ func (db *DB) Ping() chan SQLResult {
 	return result
 }
 
-// SQLResult tracks sql response and time taken
-type SQLResult struct {
-	Value          string
-	TimeTakenInMS  float64
-	Failed         bool
-	FailureMessage string
-}
-
 func executeQuery(db *sql.DB, query string) SQLResult {
 	res := SQLResult{}
 
@@ -70,25 +62,28 @@ func executeQuery(db *sql.DB, query string) SQLResult {
 	}()
 
 	start := time.Now()
+	res.Timestamp = QueryStart(start)
 	rows, err := db.QueryContext(ctx, query)
-	res.TimeTakenInMS = time.Since(start).Seconds() * 1000
+	res.TimeTaken = QueryTime(time.Since(start).Seconds() * 1000)
 
 	if err != nil {
-		res.Failed = true
-		res.FailureMessage = err.Error()
+		res.Status = failure
+		res.Message = err.Error()
 		return res
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
-			res.Failed = true
-			res.FailureMessage = err.Error()
+		var message string
+		if err := rows.Scan(&message); err != nil {
+			res.Status = failure
+			res.Message = err.Error()
 			return res
 		}
 
-		res.Value = name
+		res.Message = message
+		res.Status = success
+
 	}
 
 	return res
