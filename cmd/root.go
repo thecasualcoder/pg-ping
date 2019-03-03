@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	prettyjson "github.com/hokaccha/go-prettyjson"
 	"github.com/thecasualcoder/pg-ping/pkg/pg"
 	"github.com/urfave/cli"
 )
@@ -86,7 +87,7 @@ func run(c *cli.Context) error {
 	}
 	defer db.Close()
 
-	var resultChan chan pg.SQLResult
+	var resultChan <-chan pg.SQLResult
 
 	if c.BoolT("once") {
 		resultChan = db.PingOnce()
@@ -94,8 +95,14 @@ func run(c *cli.Context) error {
 		resultChan = db.Ping()
 	}
 
+	formatter := prettyjson.NewFormatter()
+
+	formatter.Newline = ""
+	formatter.Indent = 0
+
 	for r := range resultChan {
-		encoder.Encode(r)
+		data, _ := formatter.Marshal(r)
+		fmt.Println(string(data))
 	}
 
 	return nil

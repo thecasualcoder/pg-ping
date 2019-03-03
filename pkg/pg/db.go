@@ -29,26 +29,27 @@ func (db *DB) Close() error {
 }
 
 // PingOnce will execute query only once
-func (db *DB) PingOnce() chan SQLResult {
+func (db *DB) PingOnce() <-chan SQLResult {
 	result := make(chan SQLResult, 1)
 	go func() {
+		defer close(result)
 		result <- executeQuery(db.db, db.conf.GetQuery())
-		close(result)
 	}()
 	return result
 }
 
 // Ping will execute query indefinitely
-func (db *DB) Ping() chan SQLResult {
+func (db *DB) Ping() <-chan SQLResult {
 	result := make(chan SQLResult, 10)
 	go func() {
+		defer close(result)
+
 		ticker := time.NewTicker(db.conf.GetFrequency())
 		for range ticker.C {
 			go func() {
 				result <- executeQuery(db.db, db.conf.GetQuery())
 			}()
 		}
-		close(result)
 	}()
 	return result
 }
